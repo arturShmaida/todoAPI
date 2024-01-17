@@ -1,0 +1,3 @@
+{
+    "ignore": ["nodemonIgnore/","sessions/"]
+  }
