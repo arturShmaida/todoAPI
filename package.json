@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf ./dist && tsc",
-    "start": "node dist/index.js"
+    "serverRun": "node dist/index.js",
+    "serverMon": "nodemon run ./dist/index.js"
+
   },
   "repository": {
     "type": "git",
@@ -31,6 +33,7 @@
     ]
   },
   "dependencies": {
+    "connect-mongo": "^5.1.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
