@@ -4,6 +4,7 @@ const session = require("express-session");
 const MongoDBStore = require("connect-mongo");
 const cors = require("cors")
 const DB_NAME = "todo_api";
+const ALLOW_CORS = false;
 const mongoDBuri = "mongodb+srv://arturshmaida:vkH3h7iO5SWO2xvd@cluster0.bnawpzq.mongodb.net/?retryWrites=true&w=majority";
 import { type NextFunction, type Request, type Response } from "express";
 const { router } = require("./router.js");
@@ -11,8 +12,6 @@ const { handleLogin, handleLogout, handleRegister, handelGetItems, handleDeleteI
 const port = 3000;
 
 const app = express();
-
-
 
 let jsonParser = bodyParser.json();
 app.use(cors(
@@ -25,8 +24,6 @@ app.use(cors(
 ));
 app.use(express.static("public"));
 app.use(jsonParser)
-
-
 
 function logger(request: any, response: Response, next: NextFunction) {
     let time = new Date(Date.now()).toTimeString();
@@ -46,8 +43,11 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         maxAge: 1000 * 60 * 1,
+        sameSite: ALLOW_CORS ? "None" : "Lax",
+        secure: ALLOW_CORS ? true: false
     }
 }))
+
 app.use(logger);
 app.use("/api/v2", router);
 app.post("/api/v1/login", handleLogin);

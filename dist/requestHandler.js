@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const { validateCredentials, getItemsFromDb, createNewUser, addNewItemToDB, modifyTodoItemInDB, deleteTodoItem } = require("./db.js");
+const { validateCredentials, getItemsFromDb, createNewUser, addNewItemToDB, modifyTodoItemInDB, deleteTodoItem, isLoginAvailable } = require("./db.js");
 /*Object contains function for handling requests from the server*/
 const RequestHandler = {
     /**
@@ -46,11 +46,16 @@ const RequestHandler = {
             try {
                 const { login, pass } = request.body;
                 if (login && pass) {
-                    yield createNewUser(login, pass);
-                    request.session.regenerate(() => {
-                        console.log("regenerated session");
-                    });
-                    response.status(201).json({ ok: true });
+                    let isSuccess = yield createNewUser(login, pass);
+                    if (isSuccess) {
+                        request.session.regenerate(() => {
+                            console.log("regenerated session");
+                        });
+                        response.status(201).json({ ok: true });
+                    }
+                    else {
+                        response.status(403).json({ ok: false });
+                    }
                 }
                 else {
                     response.status(400).json({ ok: false });

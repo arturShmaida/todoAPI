@@ -19,13 +19,28 @@ const DB = {
      * Checks if provided credentials combination exists in database
      * @returns userId if such record exists, otherwise returns undefined
      */
+    isLoginAvailable: function name(login, userCollection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let isLoginAvailable = true;
+            try {
+                const user = yield userCollection.findOne({ login: login });
+                if (user) {
+                    isLoginAvailable = false;
+                }
+            }
+            catch (err) {
+                console.error(`Something went wrong trying to find the user by creadentials: ${err}\n`);
+            }
+            return isLoginAvailable;
+        });
+    },
     validateCredentials: function (login, pass) {
         return __awaiter(this, void 0, void 0, function* () {
             let userId = undefined;
             if (login && pass) {
-                yield client.connect();
-                const userCollection = client.db(DB_NAME).collection(USER_COLLECTION_NAME);
                 try {
+                    yield client.connect();
+                    const userCollection = client.db(DB_NAME).collection(USER_COLLECTION_NAME);
                     const user = yield userCollection.findOne({ login: login });
                     console.log("Data base search success");
                     if (user !== null && user.pass === pass) {
@@ -47,6 +62,7 @@ const DB = {
      */
     createNewUser: function (login, pass) {
         return __awaiter(this, void 0, void 0, function* () {
+            let isSuccess = false;
             yield client.connect();
             const userCollection = client.db(DB_NAME).collection(USER_COLLECTION_NAME);
             const newUser = {
@@ -54,13 +70,18 @@ const DB = {
                 pass: pass
             };
             try {
-                yield userCollection.insertOne(newUser);
-                console.log(`User was inserted`);
+                if (yield DB.isLoginAvailable(login, userCollection)) {
+                    yield userCollection.insertOne(newUser);
+                    isSuccess = true;
+                    console.log(`User was inserted`);
+                }
             }
             catch (err) {
                 console.error(`Something went wrong trying to insert the new documents: ${err}\n`);
+                isSuccess = false;
             }
             yield client.close();
+            return isSuccess;
         });
     },
     /**

@@ -1,5 +1,5 @@
 import { type NextFunction, type Request, type Response } from "express";
-const { validateCredentials, getItemsFromDb, createNewUser, addNewItemToDB, modifyTodoItemInDB, deleteTodoItem } = require("./db.js")
+const { validateCredentials, getItemsFromDb, createNewUser, addNewItemToDB, modifyTodoItemInDB, deleteTodoItem, isLoginAvailable } = require("./db.js")
 
 /*Object contains function for handling requests from the server*/ 
 const RequestHandler = {
@@ -34,11 +34,18 @@ const RequestHandler = {
         try {
             const { login, pass } = request.body;
             if (login && pass) {
-                await createNewUser(login, pass)
+
+               let isSuccess = await createNewUser(login, pass)
+               if(isSuccess) {
                 request.session.regenerate(() => {
                     console.log("regenerated session")
-                })
+                });
                 response.status(201).json({ ok: true });
+               } else {
+                response.status(403).json({ ok: false });
+               }
+               
+                
             } else {
                 response.status(400).json({ ok: false });
             }

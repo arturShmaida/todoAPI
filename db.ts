@@ -13,13 +13,27 @@ const DB = {
      * Checks if provided credentials combination exists in database
      * @returns userId if such record exists, otherwise returns undefined
      */
+    isLoginAvailable: async function name(login: string, userCollection: any) {
+        let isLoginAvailable = true;
+        try {
+            const user = await userCollection.findOne({ login: login });
+            if(user){
+                isLoginAvailable = false;
+            }
+
+        } catch (err: any) {
+            console.error(`Something went wrong trying to find the user by creadentials: ${err}\n`);
+        }
+        return isLoginAvailable;
+    },
     validateCredentials: async function (login: string, pass: string) {
         let userId = undefined;
         if (login && pass) {
-            await client.connect();
-            const userCollection = client.db(DB_NAME).collection(USER_COLLECTION_NAME);
+
 
             try {
+                await client.connect();
+                const userCollection = client.db(DB_NAME).collection(USER_COLLECTION_NAME);
                 const user = await userCollection.findOne({ login: login });
                 console.log("Data base search success")
                 if (user !== null && user.pass === pass) {
@@ -40,6 +54,7 @@ const DB = {
      * Adds new account to the user base
      */
     createNewUser: async function (login: string, pass: string) {
+        let isSuccess = false;
         await client.connect();
         const userCollection = client.db(DB_NAME).collection(USER_COLLECTION_NAME);
 
@@ -48,13 +63,18 @@ const DB = {
             pass: pass
         }
         try {
-            await userCollection.insertOne(newUser);
-            console.log(`User was inserted`)
-
+            if(await DB.isLoginAvailable(login, userCollection)) {
+                await userCollection.insertOne(newUser);
+                isSuccess = true;
+                console.log(`User was inserted`)
+            } 
+           
         } catch (err: any) {
             console.error(`Something went wrong trying to insert the new documents: ${err}\n`);
+            isSuccess = false;
         }
         await client.close();
+        return isSuccess;
     },
     /**
      * @returns all items asociated with provided user id
@@ -76,9 +96,9 @@ const DB = {
         }
         return itemsArray;
     },
-      /**
-     * Adds new item to the database, assigns to the item unique id: string
-     */
+    /**
+   * Adds new item to the database, assigns to the item unique id: string
+   */
     addNewItemToDB: async function (inputText: string, userId: string) {
         await client.connect();
         const itemsCollection = client.db(DB_NAME).collection(ITEM_COLLECTION_NAME);
@@ -101,10 +121,10 @@ const DB = {
 
         return newId;
     },
-      /**
-     * Checks if user with certain user id can modify data, with certain id provided
-     * If this id belongs to user - modifies it, if not - not
-     */
+    /**
+   * Checks if user with certain user id can modify data, with certain id provided
+   * If this id belongs to user - modifies it, if not - not
+   */
     modifyTodoItemInDB: async function (modifiedItem: Item, userId: string) {
         await client.connect();
         const itemsCollection = client.db(DB_NAME).collection(ITEM_COLLECTION_NAME);
@@ -135,10 +155,10 @@ const DB = {
         }
         return isSuccess;
     },
-     /**
-     * Checks if user with certain userId can delete data, with certain itemId provided
-     * If this itemId belongs to user - deletes it, if not - not
-     */
+    /**
+    * Checks if user with certain userId can delete data, with certain itemId provided
+    * If this itemId belongs to user - deletes it, if not - not
+    */
     deleteTodoItem: async function (inputItemId: { id: string }, storageId: string) {
         await client.connect();
         const itemsCollection = client.db(DB_NAME).collection(ITEM_COLLECTION_NAME);
