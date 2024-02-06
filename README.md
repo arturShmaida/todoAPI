@@ -1,8 +1,13 @@
-Simple REST API for To Do aplication. 
-
+## Simple REST API for To Do aplication. 
 To compile code use command:
- npm run build
+```javascript
+npm run build
+```
 To run server:
-    npm run serverRun
+```javascript
+npm run serverRun
+```
 To run server with nodemon:
-  npm run serverMon
+```javascript
+npm run serverMon
+```
